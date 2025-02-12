@@ -3,7 +3,13 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 import datetime
 
-client = discord.Client()
+intents = discord.Intents.default()
+intents.messages = True  # Allows the bot to receive messages
+intents.guilds = True  # Allows the bot to see guilds
+intents.message_content = True  # Required for reading message content
+
+# Initialize the Discord client with intents
+client = discord.Client(intents=intents)
 scheduler = AsyncIOScheduler()
 
 # Store bills and payments (you can replace this with your data storage solution)
@@ -20,7 +26,7 @@ bills = {
 unexpected_bills = []
 
 # Channel ID where you want the bot to send messages
-BILLS_CHANNEL_ID = 123456789012345678  # Replace with your channel ID
+BILLS_CHANNEL_ID = <channel ID>  # Replace with your channel ID
 
 async def send_bills_list():
     channel = client.get_channel(BILLS_CHANNEL_ID)
@@ -30,7 +36,7 @@ async def send_bills_list():
 async def send_monthly_summary():
     channel = client.get_channel(BILLS_CHANNEL_ID)
     total = sum(bills.values()) + sum(unexpected_bills)
-    await channel.send(f"Monthly Summary:\nTotal Payments: ${total}")
+    await channel.send(f"Monthly Summary:\nTotal Payments: ₪{total}")
     # Reset bills for the new month
     reset_bills()
 
@@ -55,7 +61,7 @@ async def on_message(message):
             amount = float(amount)
             if bill in bills:
                 bills[bill] += amount
-                await message.channel.send(f"Payment of ${amount} logged for {bill}.")
+                await message.channel.send(f"Payment of ₪{amount} logged for {bill}.")
             else:
                 await message.channel.send("Unknown bill.")
         except ValueError:
@@ -68,14 +74,21 @@ async def on_message(message):
             amount = float(amount)
             description = " ".join(description)
             unexpected_bills.append(amount)
-            await message.channel.send(f"Unexpected payment of ${amount} for: {description}.")
+            await message.channel.send(f"Unexpected payment of ₪{amount} for: {description}.")
         except ValueError:
             await message.channel.send("Invalid format. Use: !pay_unexpected <amount> <description>")
 
     elif message.content.startswith("!summary"):
         # Show current summary
         total = sum(bills.values()) + sum(unexpected_bills)
-        await message.channel.send(f"Total Payments So Far: ${total}")
+        await message.channel.send(f"Total Payments So Far: ₪{total}")
+
+    elif message.content.startswith("!bills"):
+        # Print all current bills and their amounts
+        bill_list = "\n".join([f"{bill}: ₪{amount}" for bill, amount in bills.items()])
+        unexpected_total = sum(unexpected_bills)
+        message_text = f"📋 **Current Bills:**\n{bill_list}\n\n💸 **Unexpected Bills Total:** ₪{unexpected_total}"
+        await message.channel.send(message_text)
 
 # Run the bot with your token
-client.run('YOUR_BOT_TOKEN')  # Replace with your actual bot token
+client.run('<bot-token>')  # Replace with your actual bot token
