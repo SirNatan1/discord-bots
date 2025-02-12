@@ -22,6 +22,8 @@ First, you need to install the required Python libraries. Open your terminal (or
 
 ```bash
 pip install discord.py
+pip install APScheduler
+pip install audioop-lts
 ```
 
 ### **Step 2: Set Up Your Discord Bot**
@@ -36,7 +38,7 @@ pip install discord.py
 3. Open the file and replace `'YOUR_BOT_TOKEN'` with the bot token you copied earlier:
 
 ```python
-bot.run('YOUR_BOT_TOKEN')  # Replace this with your actual bot token
+client.run('YOUR_BOT_TOKEN')  # Replace this with your actual bot token
 ```
 
 ### **Step 4: Run the Bot**
@@ -53,7 +55,7 @@ You should see a message like `Logged in as <bot_name>` indicating that the bot 
 2. Under **OAuth2 URL Generator**, select:
    - Scopes: `bot`
    - Bot Permissions: `Send Messages`, `Read Message History`, `Manage Messages`, `Add Reactions` (you can adjust permissions as needed).
-3. Copy the generated URL, paste it in your browser, and invite the bot to your Discord server.
+3. Copy the generated URL, paste it in your browser, this will add the bot to your Discord server.
 
 ---
 
@@ -64,13 +66,16 @@ You should see a message like `Logged in as <bot_name>` indicating that the bot 
   Logs a payment for a regular bill.  
   Example: `!pay electricity 50`
 
-- **`!pay_unexpected <amount> <description>`**  
+- **`!unexpected <amount> <description>`**  
   Logs a payment for an unexpected bill with a description.  
-  Example: `!pay_unexpected 100 "Repair Costs"`
+  Example: `!unexpected 100 "Repair Costs"`
 
 ### **Get Payment Summary**
 - **`!summary`**  
   Displays a summary of the total payments for regular and unexpected bills.
+
+- **`!bills`** 
+  Displays a list of all the bills and their current amount, and presents it in a nicely formated message
 
 ---
 

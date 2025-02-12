@@ -1,14 +1,8 @@
 import discord
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
-import datetime
 
-intents = discord.Intents.default()
-intents.messages = True  # Allows the bot to receive messages
-intents.guilds = True  # Allows the bot to see guilds
-intents.message_content = True  # Required for reading message content
-
-# Initialize the Discord client with intents
+intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 scheduler = AsyncIOScheduler()
 
@@ -67,16 +61,16 @@ async def on_message(message):
         except ValueError:
             await message.channel.send("Invalid format. Use: !pay <bill> <amount>")
 
-    elif message.content.startswith("!pay_unexpected"):
+    elif message.content.startswith("!unexpected"):
         # Process unexpected bill payment
         try:
             _, amount, *description = message.content.split()
             amount = float(amount)
             description = " ".join(description)
-            unexpected_bills.append(amount)
+            unexpected_bills.append((amount, description))  # Store as tuple (amount, description)
             await message.channel.send(f"Unexpected payment of ₪{amount} for: {description}.")
         except ValueError:
-            await message.channel.send("Invalid format. Use: !pay_unexpected <amount> <description>")
+            await message.channel.send("Invalid format. Use: !unexpected <amount> <description>")
 
     elif message.content.startswith("!summary"):
         # Show current summary
@@ -86,8 +80,9 @@ async def on_message(message):
     elif message.content.startswith("!bills"):
         # Print all current bills and their amounts
         bill_list = "\n".join([f"{bill}: ₪{amount}" for bill, amount in bills.items()])
-        unexpected_total = sum(unexpected_bills)
-        message_text = f"📋 **Current bills:**\n{bill_list}\n\n💸 **Unexpected bills total:** ₪{unexpected_total}"
+        # Print unexpected bills with descriptions
+        unexpected_list = "\n".join([f"{description}: ₪{amount}" for amount, description in unexpected_bills])
+        message_text = f"📋 **Current bills:**\n{bill_list}\n\n💸 **Unexpected bills:**\n{unexpected_list}"
         await message.channel.send(message_text)
 
 # Run the bot with your token
