@@ -31,25 +31,23 @@ async def send_monthly_summary():
     channel = client.get_channel(BILLS_CHANNEL_ID)
     total = sum(bills.values()) + sum(unexpected_bills)
     await channel.send(f"Monthly summary:\nTotal Payments: ₪{total}")
-    # Reset bills for the new month
     reset_bills()
 
 def reset_bills():
     global bills, unexpected_bills
-    bills = {key: 0 for key in bills}  # Reset regular bills
-    unexpected_bills = []  # Reset unexpected bills
+    bills = {key: 0 for key in bills}
+    unexpected_bills = [] 
 
 @client.event
 async def on_ready():
     print(f'Logged in as {client.user}')
-    scheduler.add_job(send_bills_list, 'cron', day=1, hour=9, minute=0)  # Sends bills list at 9:00 AM on the 1st of each month
-    scheduler.add_job(send_monthly_summary, 'cron', day=28, hour=20, minute=00)  # Sends summary at 20:00 PM on the 28th (change as needed)
+    scheduler.add_job(send_bills_list, 'cron', day=1, hour=9, minute=0)
+    scheduler.add_job(send_monthly_summary, 'cron', day=28, hour=20, minute=00)
     scheduler.start()
 
 @client.event
 async def on_message(message):
     if message.content.startswith("!pay"):
-        # Process regular bill payment
         try:
             _, bill, amount = message.content.split()
             amount = float(amount)
@@ -62,28 +60,23 @@ async def on_message(message):
             await message.channel.send("Invalid format. Use: !pay <bill> <amount>")
 
     elif message.content.startswith("!unexpected"):
-        # Process unexpected bill payment
         try:
             _, amount, *description = message.content.split()
             amount = float(amount)
             description = " ".join(description)
-            unexpected_bills.append((amount, description))  # Store as tuple (amount, description)
+            unexpected_bills.append((amount, description))  
             await message.channel.send(f"Unexpected payment of ₪{amount} for: {description}.")
         except ValueError:
             await message.channel.send("Invalid format. Use: !unexpected <amount> <description>")
 
     elif message.content.startswith("!summary"):
-        # Show current summary
         total = sum(bills.values()) + sum(unexpected_bills)
         await message.channel.send(f"Total payments for the month: ₪{total}")
 
     elif message.content.startswith("!bills"):
-        # Print all current bills and their amounts
         bill_list = "\n".join([f"{bill}: ₪{amount}" for bill, amount in bills.items()])
-        # Print unexpected bills with descriptions
         unexpected_list = "\n".join([f"{description}: ₪{amount}" for amount, description in unexpected_bills])
         message_text = f"📋 **Current bills:**\n{bill_list}\n\n💸 **Unexpected bills:**\n{unexpected_list}"
         await message.channel.send(message_text)
 
-# Run the bot with your token
 client.run('<bot_token>')  # Replace with your actual bot token
