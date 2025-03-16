@@ -1,4 +1,5 @@
 import discord
+import random
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 intents = discord.Intents.all()
@@ -6,6 +7,7 @@ client = discord.Client(intents=intents)
 scheduler = AsyncIOScheduler()
 
 CLEANING_CHANNEL_ID = 123456789012345678  # Replace with your actual channel ID
+names = ["Natan", "Dana"]  # Names to assign chores randomly
 
 cleaning_tasks = {
     "daily": [
@@ -23,14 +25,18 @@ cleaning_tasks = {
         "🚽 Bathroom: Scrub toilet, sink, shower/tub",
         "🍽️ Kitchen: Wipe appliances, clean microwave, scrub sink",
         "🛏️ Bedroom: Change bedsheets",
-        "🗑️ Trash Cans: Wipe inside"
+        "🧺 Laundry: Wash clothes",
+        "🧺 Laundry: Hang wet clothes",
+        "🗑️ Trash Cans: Wipe inside",
+        "🥬 Grocery: Make a list for the week"
     ],
     "biweekly": [
         "🛋️ Vacuum couch & under furniture",
         "🚪 Wipe doorknobs, light switches, handles",
         "🚿 Check & clean bathroom vent/fan",
         "🧺 Shake out/vacuum rugs & mats",
-        "🪞 Glass & Mirrors: Wipe down"
+        "🪞 Glass & Mirrors: Wipe down",
+        "🛏️ Change bedshits"
     ],
     "monthly": [
         "🪟 Clean windows (inside)",
@@ -56,11 +62,16 @@ cleaning_tasks = {
     ]
 }
 
+def assign_tasks_randomly(tasks):
+    """Assigns each task to a random person"""
+    return [f"{task} - {random.choice(names)}" for task in tasks]
+
 async def send_cleaning_reminder(task_type):
-    """Sends a cleaning reminder to the designated Discord channel."""
+    """Sends a cleaning reminder with assigned names."""
     channel = client.get_channel(CLEANING_CHANNEL_ID)
     if channel:
-        tasks_list = "\n".join(cleaning_tasks[task_type])
+        assigned_tasks = assign_tasks_randomly(cleaning_tasks[task_type])
+        tasks_list = "\n".join(assigned_tasks)
         await channel.send(f"🧹 **{task_type.capitalize()} Cleaning Reminder:**\n{tasks_list}")
 
 @client.event
@@ -75,5 +86,4 @@ async def on_ready():
     scheduler.add_job(send_cleaning_reminder, 'cron', month="1", day="1", hour=9, args=["yearly"])  # Yearly on Jan 1st at 9 AM
 
     scheduler.start()
-
 client.run('YOUR_BOT_TOKEN')  # Replace with your bot token
